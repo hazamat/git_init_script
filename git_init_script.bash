@@ -70,8 +70,10 @@ main_Menu(){
  echo "3)DELETE A PROFILE"
  echo "4)INIT GIT FOR CURRENT DIRECTORY (INIRIALIZE ONLY: MUST DO ANY SERVER CONNECTION AFTER)"
  echo "5)OVERWRITE FOR CURRENT DIRECTORY/REPOSITORY"
- echo "6)EXIT"
+ echo "6)LIST PROFILES"
+ echo "7)EXIT"
  read_Integer
+ echo ""
  case "$USER_INPUT" in
  "0")
   echo "INSERT NEw PROFILES DIRECTORY (ABSOLUTE ADDRESS WITH A '/' AT THE END)"
@@ -146,6 +148,16 @@ main_Menu(){
   git config user.signingkey "$GIT_PGP"
   ;;
  "6")
+  HOME_DIR="$(pwd)"
+  cd "$PROFILES_DIRECTORY"
+  mapfile -t profiles < <(find . -maxdepth 1 -type f -name "*.profile.bash" | tr -d '\r')
+  for profile in "${profiles[@]}"; do
+   profile="${profile#./}"
+   echo "${profile%.profile.bash}"
+  done
+  cd "$HOME_DIR"
+  ;;
+ "7")
   clean 0
  ;;
  *)
