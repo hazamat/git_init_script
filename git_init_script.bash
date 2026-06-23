@@ -43,6 +43,17 @@ read_String(){
  read -r USER_INPUT
 }
 
+list_Profiles(){
+ HOME_DIR="$(pwd)"
+ cd "$PROFILES_DIRECTORY"
+ mapfile -t profiles < <(find . -maxdepth 1 -type f -name "*.profile.bash" | tr -d '\r')
+ for profile in "${profiles[@]}"; do
+  profile="${profile#./}"
+  echo "${profile%.profile.bash}"
+ done
+ cd "$HOME_DIR"
+}
+
 set_GIT_NAME(){
   echo "INSERT GIT user.name:"
   read_String
@@ -93,6 +104,7 @@ main_Menu(){
  ;;
  "2")
   echo "WHAT PROFILE ARE YOU MODIFYING:"
+  list_Profiles
   read_String
   GIT_PROFILE="$USER_INPUT"
   GIT_PROFILE_FILE="${PROFILES_DIRECTORY}${USER_INPUT}.profile.bash"
@@ -101,23 +113,29 @@ main_Menu(){
    return
   fi
   . "$GIT_PROFILE_FILE"
-  echo "WHICH PART DO YOU WANT TO EDIT:"
-  echo "GIT_NAME"
-  echo "GIT_EMAIL"
-  echo "GIT_PGP"
+  echo "WHICH PART DO YOU WANT TO EDIT: (TYPE VARIALBE STRING)"
+  echo "'GIT_NAME'	: $GIT_NAME"
+  echo "'GIT_EMAIL'	: $GIT_EMAIL"
+  echo "'GIT_PGP'	: $GIT_PGP"
+  echo "'QUIT'"
   read_String
+  if [[ "$USER_INPUT" == "QUIT" ]] then
+   return
+  fi
   set_${USER_INPUT}
   write_Git_Profile_File
   ;;
 
  "3")
   echo "INSERT THE NAME OF THE PROFILE:"
+  list_Profiles
   read_String
   rm "${PROFILES_DIRECTORY}${USER_INPUT}.profile.bash"
  ;;
 
  "4")
   echo "ENTER THE NAME OF THE PROFILE:"
+  list_Profiles
   read_String
   GIT_PROFILE_FILE="${PROFILES_DIRECTORY}${USER_INPUT}.profile.bash"
   if [[ ! -f "$GIT_PROFILE_FILE" ]] then
@@ -134,6 +152,7 @@ main_Menu(){
 
   "5")
   echo "ENTER THE NAME OF THE PROFILE:"
+  list_Profiles
   read_String
   GIT_PROFILE_FILE="${PROFILES_DIRECTORY}${USER_INPUT}.profile.bash"
  
@@ -148,14 +167,7 @@ main_Menu(){
   git config user.signingkey "$GIT_PGP"
   ;;
  "6")
-  HOME_DIR="$(pwd)"
-  cd "$PROFILES_DIRECTORY"
-  mapfile -t profiles < <(find . -maxdepth 1 -type f -name "*.profile.bash" | tr -d '\r')
-  for profile in "${profiles[@]}"; do
-   profile="${profile#./}"
-   echo "${profile%.profile.bash}"
-  done
-  cd "$HOME_DIR"
+  list_Profiles
   ;;
  "7")
   clean 0
